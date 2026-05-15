@@ -40,20 +40,20 @@ We will also be utilizing a handful of programs and tools:
 2. Static Configuration: Harden the Domain Controller by assigning a static IP of 10.0.0.1 and configuring DNS to point to itself.
     - On the Domain Controller, we will go to ```Settings > Network Connections > Properties > IPv4```.
     - Set the IP address to 10.0.0.1, the subnet mask to 255.255.255.0, and the preferred DNS to 127.0.0.1.
-3. Identity Setup: Install Active Directory Domain Services (AD DS). Promote the server to a Domain Controller for the upcoming lab.local forest.
+3. Identity Setup: Install Active Directory Domain Services (AD DS). Promote the server to a Domain Controller for the upcoming lab.internal forest.
     - Search for and open Server Manager. Click "Add roles and features".
-    - Check "Active Directory Domain Services" and follow the prompts to install.
+    - Follow the default prompts, but on Server Roles, select "Active Directory Domain Services" to install.
     - Click the flag notification and select "Promote this server to a domain controller".
-    - Select "Add a new forest" and name it. I used "lab.local".
+    - Select "Add a new forest" and name it. I used "lab.internal".
     - Create a secure DSRM password, and reboot when finished.
 4. OU Design: Implement a logical Organizational Unit (OU). All testing users and workstations are moved here to ensure targeted GPO application.
     - Now search for and open Actve Directory Users and Computers.
-    - Right-click on lab.local, create a new Organizational Unit, and name it. I used CORP.
+    - Right-click on lab.internal, create a new Organizational Unit, and name it. I used CORP.
     - Right-click on CORP OU, and create a new user. I used kbipat.
 5. Domain Join: Configure the Workstation to use the DC as its primary DNS and successfully join it to the domain.
     - Set the Workstation IPv4 to 10.0.0.1.
     - Go to System Settings > About > Rename this PC.
-    - Click "Change", select "Domain", enter "lab.local", and provide the Domain Controller admin credentials.
+    - Click "Change", select "Domain", enter "lab.internal", and provide the Domain Controller admin credentials.
     - After the Workstation joins the domain, go back in Active Directory Users and Computers on the Domain Controller, and drag the Workstations computer object from the Computers container into the CORP OU.
 
 ## Phase 2: Vulnerability Management
@@ -61,18 +61,18 @@ We will also be utilizing a handful of programs and tools:
 
 1. Agent Deployment: Deploy the Action1 agent to both endpoints via Administrative sessions.
     - Log into your Action1 account on both the Domain Controller and Workstation endpoints.
-    - Navigate to Endpoints > Add Endpoint, and download the .msi or .exe installer onto each endpoint.
+    - Navigate to Endpoints > Add Endpoint, and download the .msi installer onto each endpoint.
     - Run the installer on both endpoints.
 2. Vulnerability Assessment: Conduct a baseline scan to identify missing Windows KBs and critical third-party software risks.
     - After Action1 has been installed on both endpoints, head back to the Endpoints tab in Action1 on either endpoint.
     - Wait for the agents to check in, typically takes a few minutes. Grab a coffee, tea, or snack in the meantime.
     - Click on the Vulnerabilities tab to see a list of missing security patches and outdated applications. The older .iso file you used for your VMs, the more likely you are you have a greater number.
 3. Remediation: Orchestrate a centralized patch cycle from the cloud console. Verify that both the Domain Controller and Workstation reached a 100% "Patched" status.
-    - Select all available patches, and click install.
+    - Select all available patches, and click "Start Remediation".
     - Monitor the progress bar or until the dashboard shows 0 Vulnerabilities for both endpoints.
     - For future patches, you can take things a step further by creating a patch schedule, to deploy updates at a specific time!
 
-## Phase 3: Zero-Trust Enforcement
+## Phase 3: Zero-Trust Ideology
 #### Implementation of AppLocker for a Default Deny posture to prevent unauthorized executions.
 
 1. GPO Configuration: Create a Group Policy Object named AppLocker_Rules linked to the CORP OU.
@@ -93,7 +93,7 @@ We will also be utilizing a handful of programs and tools:
     - Check the configured box for both rule types and set it to "Enforce Rules".
     - Run ```gpupdate /force``` on the Workstation to force update the group policy.
 5. Validation: Verify the policy by attempting to run cmd.exe from a user-writable directory (Desktop) as a standard user. Confirm the system successfully blocked execution.
-    - Login as your local user for lab.local, for me it is lab\kbipat.
+    - Login as your local user for lab.internal, for me it is lab\kbipat.
     - Go to C:\Windows\System32, copy cmd.exe, and paste it to the Desktop.
     - Attempt to run cmd.exe from the desktop - it should be blocked by the policy as we are running it from a prohibited location.
 
@@ -122,16 +122,15 @@ We will also be utilizing a handful of programs and tools:
 4. Restart the agent service to begin log ingestion.
     - Run ```Restart-Service -Name wazuh```
 5. Dashboard Analysis: Trigger "unauthorized" execution attempts on the workstation and verify that Event ID 8004 appeared in the Wazuh security dashboard.
-    - In the Wazuh Dashboard, go to Security Events.
-    - Filter for "data.win.system.eventID: "8004".
+    - In the Wazuh Dashboard, find the Workstation, then click on Threat Hunting > Events.
     - Ensure the block attempt for running cmd.exe on the Desktop from the previous phase appears as a security alert.
 
 ## Phase 5: Backup & Disaster Recovery
 #### Ensuring business continuity and data integrity by utilizing Veeam Backup and Recovery.
 
 1. Veeam Installation: Deploy Veeam Backup & Replication Community Edition.
-    - Mount the Veeam Backup and Recovery .iso on your backup server.
-    - Run setup.exe and follow the prompts for a standalone installation.
+    - Mount the Veeam Backup and Recovery .iso on the Domain Controller.
+    - Run setup.exe, and select "Install Veeam Backup & Replication", following the prompts for a standalone installation.
 2. Repository Setup: Configure a dedicated virtual disk as the primary backup target.
     -  In the Veeam console, go to ```Backup Infrastructure > Backup Repositories```.
     -  Click "Add Repository", select "Direct attached storage", and choose your dedicated backup disk.
@@ -142,7 +141,7 @@ We will also be utilizing a handful of programs and tools:
     - Start the job and wait for the "Success" status.
 4. Recovery Drill: Simulate a failure by deleting a critical system component, then utilize Instant VM Recovery to restore the workstation, verifying a recovery time objective (RTO) of under 5 minutes.
     - On the Workstation, delete something like ```C:\Windows\System32\drivers```.
-    - In Veeam, right-click the backup, and select Restore Entire VM.
+    - In Veeam, right-click the backup, and select Restore.
     - Choose "Instant Recovery" to power the VM directly from the backup file for a rapid RTO.
 
 ## Summary
