@@ -72,14 +72,14 @@ We will also be utilizing a handful of programs and tools:
 1. Agent Deployment: Deploy the Action1 agent to both endpoints via Administrative sessions.
     - Log into your Action1 account on both the Domain Controller and Workstation endpoints.
     - Navigate to Endpoints > Add Endpoint, and download the .msi installer onto each endpoint.
-    - Run the installer on both endpoints.
+    - Run the installer on both endpoints.\
       ![](https://github.com/kamanbipat/Enterprise-Defense-Lab/blob/main/Home%20Lab%201/Screenshot%202026-05-13%20212946.png?raw=true)
       ![](https://github.com/kamanbipat/Enterprise-Defense-Lab/blob/main/Home%20Lab%201/Screenshot%202026-05-13%20213029.png?raw=true)
       ![](https://github.com/kamanbipat/Enterprise-Defense-Lab/blob/main/Home%20Lab%201/Screenshot%202026-05-13%20213127.png?raw=true)
 2. Vulnerability Assessment: Conduct a baseline scan to identify missing Windows KBs and critical third-party software risks.
     - After Action1 has been installed on both endpoints, head back to the Endpoints tab in Action1 on either endpoint.
     - Wait for the agents to check in, typically takes a few minutes. Grab a coffee, tea, or snack in the meantime.
-    - Click on the Vulnerabilities tab to see a list of missing security patches and outdated applications. The older .iso file you used for your VMs, the more likely you are you have a greater number.
+    - Click on the Vulnerabilities tab to see a list of missing security patches and outdated applications. The older .iso file you used for your VMs, the more likely you are you have a greater number.\
       ![](https://github.com/kamanbipat/Enterprise-Defense-Lab/blob/main/Home%20Lab%201/Screenshot%202026-05-13%20213233.png?raw=true)
       ![](https://github.com/kamanbipat/Enterprise-Defense-Lab/blob/main/Home%20Lab%201/Screenshot%202026-05-13%20213303.png?raw=true)
       
@@ -95,7 +95,7 @@ We will also be utilizing a handful of programs and tools:
 1. GPO Configuration: Create a Group Policy Object named AppLocker_Rules linked to the CORP OU.
     - On the Domain Controller, open Group Policy Management.
     - Right-click the CORP OU, then select "Create a GPO in this domain, and link it here"
-    - Name it "AppLocker_Rules"
+    - Name it "AppLocker_Rules"\
       ![](https://github.com/kamanbipat/Enterprise-Defense-Lab/blob/main/Home%20Lab%201/Screenshot%202026-05-13%20211456.png?raw=true)
 2. Service Automation: Configure the Application Identity service to "Automatic" via GPO to ensure the enforcement engine remains active.
     - Right-click the new GPO and select Edit.
@@ -106,14 +106,14 @@ We will also be utilizing a handful of programs and tools:
     - Go back one time to Security Settings, and go into ```Application Control Policies > AppLocker```.
     - Right-click Executable Rules and select "Create Default Rules".
     - From AppLocker, navigate into "Packaged App Rules".
-    - Right-click the empty right pane and select "Create Default Rules"
+    - Right-click the empty right pane and select "Create Default Rules"\
       ![](https://github.com/kamanbipat/Enterprise-Defense-Lab/blob/main/Home%20Lab%201/Screenshot%202026-05-13%20211829.png?raw=true)
 4. Enforcement: Transition policy from "Audit Only" to "Enforce Rules".
     - Go to the top level AppLocker Folder > Properties
     - Check the configured box for both rule types and set it to "Enforce Rules".
     - Run ```gpupdate /force``` on the Workstation to force update the group policy.
       ![](https://github.com/kamanbipat/Enterprise-Defense-Lab/blob/main/Home%20Lab%201/Screenshot%202026-05-13%20211947.png?raw=true)
-      ![](https://github.com/kamanbipat/Enterprise-Defense-Lab/blob/main/Home%20Lab%201/Screenshot%202026-05-13%20212032.png?raw=true)
+      ![](https://github.com/kamanbipat/Enterprise-Defense-Lab/blob/main/Home%20Lab%201/Screenshot%202026-05-13%20212032.png?raw=true)\
       ![](https://github.com/kamanbipat/Enterprise-Defense-Lab/blob/main/Home%20Lab%201/Screenshot%202026-05-13%20212130.png?raw=true)
 5. Validation: Verify the policy by attempting to run cmd.exe from a user-writable directory (Desktop) as a standard user. Confirm the system successfully blocked execution.
     - Login as your local user for lab.internal, for me it is lab\kbipat.
@@ -132,7 +132,7 @@ We will also be utilizing a handful of programs and tools:
 2. Agent Installation: Deploy Wazuh agents to all Windows endpoints using the dashboard's PowerShell deployment script.
     - Browse to the Manager IP in a web browser.
     - Select ```Deploy new agent > Windows```.
-    - Copy the command provided and run it in an Administrator-level Powershell window on both the Domain Controller and Workstation endpoints.
+    - Copy the command provided and run it in an Administrator-level Powershell window on both the Domain Controller and Workstation endpoints.\
       ![](https://github.com/kamanbipat/Enterprise-Defense-Lab/blob/main/Home%20Lab%201/Screenshot%202026-05-14%20155807.png?raw=true)
       ![](https://github.com/kamanbipat/Enterprise-Defense-Lab/blob/main/Home%20Lab%201/Screenshot%202026-05-14%20160316.png?raw=true)
       
@@ -148,7 +148,7 @@ We will also be utilizing a handful of programs and tools:
 ```
     
 4. Restart the agent service to begin log ingestion.
-    - Run ```Restart-Service -Name wazuh```
+    - Run ```Restart-Service -Name wazuh```\
       ![](https://github.com/kamanbipat/Enterprise-Defense-Lab/blob/main/Home%20Lab%201/Screenshot%202026-05-14%20165028.png?raw=true)
 5. Dashboard Analysis: Trigger "unauthorized" execution attempts on the workstation and verify that Event ID 8004 appeared in the Wazuh security dashboard.
     - In the Wazuh Dashboard, find the Workstation, then click on Threat Hunting > Events.
@@ -171,7 +171,7 @@ We will also be utilizing a handful of programs and tools:
     - Go to ```Home > Jobs > Backup > Virtual Machine```
     - Add the Workstation to the job.
     - Check "Enable application-aware processing" (use domain admin credentials when prompted).
-    - Start the job and wait for the "Success" status.
+    - Start the job and wait for the "Success" status.\
       ![](https://github.com/kamanbipat/Enterprise-Defense-Lab/blob/main/Home%20Lab%201/Screenshot%202026-05-14%20204003.png?raw=true)
 4. Recovery Drill: Simulate a failure by deleting a critical system component, then utilize Instant VM Recovery to restore the workstation, verifying a recovery time objective (RTO) of under 5 minutes.
     - On the Workstation, delete something like ```C:\Windows\System32\drivers```.
